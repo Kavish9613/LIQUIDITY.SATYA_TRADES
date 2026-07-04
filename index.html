@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Notes — a simple journal</title>
+<meta name="description" content="A simple personal notes and blog page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+  /* ---------- Design tokens ---------- */
+  :root{
+    --bg:        #12221D;   /* deep forest ink, page background */
+    --bg-alt:    #182D26;   /* slightly lighter panel background */
+    --paper:     #ECE6D6;   /* warm parchment — main text colour */
+    --muted:     #93A99C;   /* muted sage — secondary text */
+    --accent:    #D9A441;   /* mustard — marks, headings accent */
+    --link:      #E4886A;   /* soft coral — links */
+    --rule:      #2E4239;   /* hairline rule colour */
+
+    --display:   'Fraunces', Georgia, serif;
+    --body:      'Source Serif 4', Georgia, serif;
+    --mono:      'IBM Plex Mono', Menlo, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--paper);
+    font-family:var(--body);
+    font-size:18px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:var(--link); text-decoration-thickness:1px; text-underline-offset:3px; }
+  a:hover{ color:var(--accent); }
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+  }
+
+  /* ---------- Layout shell ---------- */
+  .page{
+    display:grid;
+    grid-template-columns: 64px minmax(0,720px);
+    justify-content:center;
+    gap:0 32px;
+    max-width:1000px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* ---------- Header ---------- */
+  header.hero{
+    grid-column:1 / -1;
+    padding:88px 0 56px;
+    border-bottom:1px solid var(--rule);
+  }
+  header.hero .eyebrow{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 18px;
+  }
+  header.hero h1{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(40px, 6vw, 64px);
+    line-height:1.05;
+    margin:0 0 20px;
+    max-width:14ch;
+  }
+  header.hero p.lede{
+    font-size:20px;
+    color:var(--muted);
+    max-width:52ch;
+    margin:0 0 28px;
+  }
+  nav.top a{
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--paper);
+    margin-right:22px;
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+  }
+  nav.top a:hover{ color:var(--accent); border-color:var(--accent); }
+
+  /* ---------- The spine: a vertical timeline of entry dates ----------
+     This is the page's signature element — a book-spine index down the
+     left margin. Each tick corresponds to a post; click to jump there. */
+  .spine{
+    position:relative;
+    padding-top:64px;
+  }
+  .spine::before{
+    content:"";
+    position:absolute;
+    top:64px; bottom:24px; left:31px;
+    width:1px;
+    background:var(--rule);
+  }
+  .spine a{
+    position:sticky;
+    top:24px;
+    display:block;
+    width:64px;
+    height:64px;
+    margin-bottom:220px;
+    text-decoration:none;
+  }
+  .spine a .tick{
+    position:relative;
+    left:27px;
+    top:24px;
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--bg);
+    border:1px solid var(--muted);
+    display:block;
+  }
+  .spine a:hover .tick, .spine a:focus-visible .tick{
+    background:var(--accent);
+    border-color:var(--accent);
+  }
+  .spine a .date{
+    position:absolute;
+    left:-4px;
+    top:38px;
+    width:78px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    writing-mode:vertical-rl;
+    text-orientation:mixed;
+  }
+
+  /* ---------- Main column ---------- */
+  main{ padding:64px 0 40px; min-width:0; }
+
+  section.about{
+    padding-bottom:56px;
+    margin-bottom:56px;
+    border-bottom:1px solid var(--rule);
+  }
+  section.about h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:26px;
+    margin:0 0 14px;
+  }
+  section.about p{ color:var(--paper); max-width:60ch; }
+  section.about .tags{
+    margin-top:20px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+  }
+  section.about .tags span{
+    display:inline-block;
+    border:1px solid var(--rule);
+    border-radius:3px;
+    padding:3px 9px;
+    margin:0 8px 8px 0;
+  }
+
+  article.entry{
+    padding-bottom:56px;
+    margin-bottom:56px;
+    border-bottom:1px solid var(--rule);
+    scroll-margin-top:24px;
+  }
+  article.entry:last-child{ border-bottom:none; }
+  article.entry .meta{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent);
+    margin:0 0 10px;
+    letter-spacing:.02em;
+  }
+  article.entry h3{
+    font-family:var(--display);
+    font-weight:600;
+    font-style:italic;
+    font-size:30px;
+    margin:0 0 16px;
+    line-height:1.15;
+  }
+  article.entry p{ margin:0 0 16px; max-width:60ch; }
+  article.entry p:last-child{ margin-bottom:0; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    grid-column:1 / -1;
+    border-top:1px solid var(--rule);
+    padding:32px 0 64px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  footer a{ color:var(--muted); }
+  footer a:hover{ color:var(--accent); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 720px){
+    .page{ grid-template-columns: 1fr; padding:0 20px; }
+    .spine{ display:none; }
+    header.hero{ padding:56px 0 40px; }
+    main{ padding:40px 0 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="hero">
+    <p class="eyebrow">Field Notes · a personal journal</p>
+    <h1>Notes on things worth<br>paying attention to.</h1>
+    <p class="lede">
+      Hi, I'm <strong>Your Name</strong> — this is a small page where I write
+      about what I'm building, reading, and figuring out. Edit this line to
+      introduce yourself.
+    </p>
+    <nav class="top">
+      <a href="#about">About</a>
+      <a href="#entry-3">Latest</a>
+      <a href="mailto:you@example.com">Contact</a>
+    </nav>
+  </header>
+
+  <!-- Spine: one <a> per entry below, kept in the same order -->
+  <aside class="spine" aria-hidden="true">
+    <a href="#about"><span class="tick"></span><span class="date">Start</span></a>
+    <a href="#entry-1"><span class="tick"></span><span class="date">Jan 2026</span></a>
+    <a href="#entry-2"><span class="tick"></span><span class="date">Mar 2026</span></a>
+    <a href="#entry-3"><span class="tick"></span><span class="date">Jun 2026</span></a>
+  </aside>
+
+  <main>
+
+    <section class="about" id="about">
+      <h2>About</h2>
+      <p>
+        Replace this paragraph with a short bio: who you are, what you work
+        on, and why this page exists. Two or three sentences is plenty —
+        people are here to read your notes, not your résumé.
+      </p>
+      <div class="tags">
+        <span>writing</span><span>notes</span><span>learning in public</span>
+      </div>
+    </section>
+
+    <article class="entry" id="entry-1">
+      <p class="meta">01 — January 2026</p>
+      <h3>The first entry is always the hardest</h3>
+      <p>
+        This is placeholder text for your first post. Swap it out for
+        whatever you actually want to write about — a project update, a
+        thing you learned, or a link you want to remember. Keep paragraphs
+        short; it reads better on a page like this.
+      </p>
+      <p>
+        You can add as many paragraphs as you like inside this
+        <code>&lt;article&gt;</code> block.
+      </p>
+    </article>
+
+    <article class="entry" id="entry-2">
+      <p class="meta">02 — March 2026</p>
+      <h3>A second note, a few months later</h3>
+      <p>
+        Duplicate the <code>&lt;article class="entry"&gt;</code> block to add
+        a new post, give it a new <code>id</code>, and add a matching tick
+        mark in the spine on the left so it stays linked to the timeline.
+      </p>
+    </article>
+
+    <article class="entry" id="entry-3">
+      <p class="meta">03 — June 2026</p>
+      <h3>Whatever you're thinking about right now</h3>
+      <p>
+        This last entry is a good spot for your most recent post — the
+        "Latest" link in the top navigation jumps straight here.
+      </p>
+    </article>
+
+  </main>
+
+  <footer>
+    <span>&copy; 2026 Your Name. Built with plain HTML &amp; CSS.</span>
+    <span><a href="https://github.com/">GitHub</a> · <a href="mailto:you@example.com">Email</a></span>
+  </footer>
+
+</div>
+
+</body>
+</html>
